@@ -2,7 +2,11 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  background-color: grey;
+}
+
+body {
+  background-color: #1f1f1e;
+  color: white;
 }
 
 body {

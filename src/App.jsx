@@ -2,19 +2,15 @@ import COURSES from './COURSES.json';
 import {useState} from 'react';
 import './App.css';
 
-function takeCourse(takenCourses, setTakenCourses, courseId) {
-  setTakenCourses(new Set([...takenCourses, courseId]));
-}
-
 function CourseCard({courseId, status, onClick}) {
   const course = COURSES[courseId];
 
   return (
     <div className={`course-card ${status}`} onClick={onClick}>
-      <p id='courseId'>{courseId}</p>
-      <p id='courseTitle'>{course.name}</p>
-      <p id='status'>Status: {status}</p>
-      <p id='prereqs'>Prereqs: {course.prereqs.length > 0 ? course.prereqs.join(', ') : "None"}</p>
+      <p className='courseId'>{courseId}</p>
+      <p className='courseTitle'>{course.name}</p>
+      <p className='status'>Status: {status}</p>
+      <p className='prereqs'>Prereqs: {course.prereqs.length > 0 ? course.prereqs.join(', ') : "None"}</p>
     </div>
   )
 }
@@ -43,13 +39,17 @@ function App() {
         <div className="taken">
           <h2>Taken</h2>
           {[...takenCourses].map(courseId => 
-            <CourseCard courseId={courseId} status='taken' />
+            <CourseCard courseId={courseId} status='taken' onClick={() => {
+              const next = new Set(takenCourses);
+              next.delete(courseId);
+              setTakenCourses(next);
+            }}/>
           )}
         </div>
         <div>
           <h2>Available</h2>
           {[...availableCourses].map(courseId => 
-            <CourseCard courseId={courseId} status='available' onClick={() => takeCourse(takenCourses, setTakenCourses, courseId)}/>
+            <CourseCard courseId={courseId} status='available' onClick={() => setTakenCourses(new Set([...takenCourses, courseId]))}/>
           )}
         </div>
         <div>
