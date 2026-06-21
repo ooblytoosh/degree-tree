@@ -1,5 +1,5 @@
 import COURSES from './COURSES.json';
-import {useState} from 'react';
+import {useEffect, useState} from 'react';
 import './App.css';
 
 function CourseCard({courseId, status, onClick}) {
@@ -16,7 +16,15 @@ function CourseCard({courseId, status, onClick}) {
 }
 
 function App() {
-  const [takenCourses, setTakenCourses] = useState(new Set());
+  const [takenCourses, setTakenCourses] = useState(() => {
+    const saved = localStorage.getItem('takenCourses');
+    return saved ? new Set(JSON.parse(saved)) : new Set();
+  });
+ 
+  useEffect(() => {
+    localStorage.setItem('takenCourses', JSON.stringify([...takenCourses]));
+  }, [takenCourses])
+
   const availableCourses = [];
   const lockedCourses = [];
 
@@ -39,7 +47,7 @@ function App() {
         <div className="taken">
           <h2>Taken</h2>
           {[...takenCourses].map(courseId => 
-            <CourseCard courseId={courseId} status='taken' onClick={() => {
+            <CourseCard key={courseId} courseId={courseId} status='taken' onClick={() => {
               const next = new Set(takenCourses);
               next.delete(courseId);
               setTakenCourses(next);
@@ -49,13 +57,13 @@ function App() {
         <div>
           <h2>Available</h2>
           {[...availableCourses].map(courseId => 
-            <CourseCard courseId={courseId} status='available' onClick={() => setTakenCourses(new Set([...takenCourses, courseId]))}/>
+            <CourseCard key={courseId} courseId={courseId} status='available' onClick={() => setTakenCourses(new Set([...takenCourses, courseId]))}/>
           )}
         </div>
         <div>
           <h2>Locked</h2>
           {[...lockedCourses].map(courseId => 
-            <CourseCard courseId={courseId} status='locked' />
+            <CourseCard key={courseId} courseId={courseId} status='locked' />
           )}
         </div>
       </div>
