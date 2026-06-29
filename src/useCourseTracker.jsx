@@ -1,6 +1,33 @@
 import { useState, useEffect } from 'react';
 import COURSES from './courses.json';
 
+function isSatisfied(prereqs, takenCourses) {
+  if (Object.keys(prereqs).length === 0) {
+    return true
+  }
+
+  if (prereqs.and) {
+    return prereqs.and.every(prereq => {
+      if (typeof prereq === "string") {
+        return takenCourses.has(prereq)
+      }
+      return isSatisfied(prereq, takenCourses)
+    });
+  }
+
+  if (prereqs.or) {
+    return prereqs.or.some(prereq => {
+      if (typeof prereq === "string") {
+        return takenCourses.has(prereq);
+      }
+      return isSatisfied(prereq, takenCourses)
+    })
+  }
+
+  return true;
+}
+
+
 export function useCourseTracker() {
   const [takenCourses, setTakenCourses] = useState(() => {
     const saved = localStorage.getItem('takenCourses');
@@ -17,7 +44,7 @@ export function useCourseTracker() {
   for (const courseId of Object.keys(COURSES)) {
     if (takenCourses.has(courseId)) continue;
 
-    if (COURSES[courseId].prereqs.every(prereq => takenCourses.has(prereq))) {
+    if (isSatisfied(COURSES[courseId].prereqs, takenCourses)) {
       availableCourses.push(courseId);
     } else {
       lockedCourses.push(courseId);
@@ -38,9 +65,9 @@ export function useCourseTracker() {
       const current = queue.shift();
       if (next.has(current)) {
         next.delete(current);
-        for (const id of Object.keys(COURSES)) {
-          if (COURSES[id].prereqs.includes(current)) {
-            queue.push(id);
+        for (const courseId of Object.keys(COURSES)) {
+          if (!isSatisfied(COURSES[courseId].prereqs, next)) {
+            queue.push(courseId);
           }
         }
       }
